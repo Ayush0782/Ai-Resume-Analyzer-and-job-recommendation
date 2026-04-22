@@ -1,7 +1,4 @@
-# ============================================================
-# app.py — Main Flask Application
-# AI-Based Job Recommendation System
-# ============================================================
+
 
 import os
 from flask import Flask, request, jsonify, render_template
@@ -9,7 +6,7 @@ from werkzeug.utils import secure_filename
 from resume_parser import extract_resume_data
 from job_matcher import get_job_recommendations
 
-# Initialize Flask app
+
 app = Flask(__name__)
 
 # Configuration
@@ -18,7 +15,7 @@ ALLOWED_EXTENSIONS = {"pdf"}
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # Max 5MB upload
 
-# Create uploads folder if it doesn't exist
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
@@ -42,13 +39,13 @@ def analyze_resume():
     3. Returns extracted skills + job recommendations
     """
 
-    # Check if file was included in the request
+   
     if "resume" not in request.files:
         return jsonify({"error": "No file uploaded."}), 400
 
     file = request.files["resume"]
 
-    # Check if a file was actually selected
+   
     if file.filename == "":
         return jsonify({"error": "No file selected."}), 400
 
@@ -62,13 +59,13 @@ def analyze_resume():
     file.save(filepath)
 
     try:
-        # Step 1: Extract resume text and skills
+       
         resume_data = extract_resume_data(filepath)
 
-        # Step 2: Get job recommendations using AI matching
+        
         recommendations = get_job_recommendations(resume_data["full_text"])
 
-        # Step 3: Build and return response
+     
         response = {
             "skills": resume_data["skills"],
             "keywords": resume_data["keywords"],
@@ -81,7 +78,6 @@ def analyze_resume():
         return jsonify({"error": f"Processing error: {str(e)}"}), 500
 
     finally:
-        # Clean up: delete uploaded file after processing
         if os.path.exists(filepath):
             os.remove(filepath)
 
