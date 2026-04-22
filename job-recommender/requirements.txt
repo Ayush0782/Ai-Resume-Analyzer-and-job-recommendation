@@ -1,16 +1,7 @@
-# requirements.txt
-# Install all dependencies with: pip install -r requirements.txt
 
-# Web Framework
 flask==3.0.0
 werkzeug==3.0.1
-
-# PDF Parsing
 pdfplumber==0.10.3
-
-# Machine Learning / NLP (TF-IDF + Cosine Similarity)
 scikit-learn==1.4.0
-
-# Data handling (used internally by scikit-learn)
 numpy==1.26.3
 pandas==2.0.3
