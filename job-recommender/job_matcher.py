@@ -1,7 +1,3 @@
-# ============================================================
-# job_matcher.py — AI-Based Job Matching using TF-IDF
-# Uses cosine similarity to rank jobs against resume
-# ============================================================
 
 import json
 import os
@@ -9,7 +5,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import requests
 
-# Path to the job dataset
+
 JOBS_FILE = os.path.join(os.path.dirname(__file__), "data", "jobs.json")
 
 
@@ -52,15 +48,13 @@ def get_job_recommendations(resume_text, top_n=5):
     """
     jobs = load_jobs()
 
-    # Build a list of job description strings for vectorization
+    
     job_descriptions = [job["description"] for job in jobs]
 
-    # Add resume text as the first document
-    # TF-IDF will learn vocabulary from all documents together
+ 
     all_documents = [resume_text] + job_descriptions
 
-    # Create TF-IDF matrix
-    # TF-IDF: converts text into numerical feature vectors
+    
     vectorizer = TfidfVectorizer(
         stop_words="english",   # Remove common English words
         ngram_range=(1, 2),     # Use single words AND two-word phrases
