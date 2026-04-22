@@ -1,16 +1,7 @@
-# ============================================================
-# resume_parser.py — PDF Parsing and Skill Extraction
-# Uses pdfplumber to read PDF text
-# Uses a predefined skill list to extract relevant skills
-# ============================================================
-
 import pdfplumber
 import re
 
-# -------------------------------------------------------
-# Master list of skills to look for in a resume
-# You can expand this list as needed
-# -------------------------------------------------------
+
 SKILL_KEYWORDS = [
     # Programming Languages
     "python", "java", "javascript", "typescript", "c++", "c#", "ruby",
