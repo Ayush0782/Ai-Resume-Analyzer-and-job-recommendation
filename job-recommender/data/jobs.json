@@ -1,0 +1,98 @@
+[
+  {
+    "id": 1,
+    "title": "Data Scientist",
+    "company": "DataCorp Analytics",
+    "category": "Data Science",
+    "description": "Develop machine learning models and perform statistical analysis on large datasets. Work with Python, pandas, scikit-learn, and TensorFlow to build predictive models and data pipelines.",
+    "required_skills": ["Python", "Machine Learning", "Pandas", "NumPy", "Scikit-learn", "SQL", "Data Analysis", "TensorFlow"]
+  },
+  {
+    "id": 2,
+    "title": "Machine Learning Engineer",
+    "company": "AI Innovations Ltd",
+    "category": "AI / ML",
+    "description": "Design, train, and deploy machine learning models at scale. Experience with deep learning frameworks such as PyTorch and TensorFlow required. MLOps and model deployment knowledge a plus.",
+    "required_skills": ["Python", "PyTorch", "TensorFlow", "Deep Learning", "Docker", "Kubernetes", "SQL", "Git"]
+  },
+  {
+    "id": 3,
+    "title": "Full Stack Web Developer",
+    "company": "WebSphere Inc",
+    "category": "Web Development",
+    "description": "Build and maintain modern web applications using React on the frontend and Node.js or Django on the backend. RESTful API design and database management required.",
+    "required_skills": ["JavaScript", "React", "Node.js", "HTML", "CSS", "SQL", "Git", "REST API", "MongoDB"]
+  },
+  {
+    "id": 4,
+    "title": "Backend Developer",
+    "company": "CloudSystems Corp",
+    "category": "Software Engineering",
+    "description": "Design scalable backend services and APIs using Python or Java. Experience with cloud platforms (AWS, GCP) and containerization technologies preferred.",
+    "required_skills": ["Python", "Java", "Flask", "FastAPI", "SQL", "PostgreSQL", "Docker", "AWS", "Git"]
+  },
+  {
+    "id": 5,
+    "title": "Data Engineer",
+    "company": "DataFlow Technologies",
+    "category": "Data Engineering",
+    "description": "Build and maintain data pipelines and ETL processes. Work with big data tools like Spark and Kafka. Cloud data warehouse experience with Snowflake or BigQuery preferred.",
+    "required_skills": ["Python", "SQL", "Apache Spark", "Kafka", "ETL", "Airflow", "AWS", "Data Pipeline", "PostgreSQL"]
+  },
+  {
+    "id": 6,
+    "title": "Frontend Developer",
+    "company": "PixelPerfect Studio",
+    "category": "Web Development",
+    "description": "Create beautiful and accessible user interfaces using React and TypeScript. Strong knowledge of CSS, HTML, and modern frontend tooling. Experience with Figma for design handoff.",
+    "required_skills": ["JavaScript", "TypeScript", "React", "HTML", "CSS", "Git", "Figma", "Next.js", "Tailwind"]
+  },
+  {
+    "id": 7,
+    "title": "DevOps Engineer",
+    "company": "InfraScale Solutions",
+    "category": "DevOps / Cloud",
+    "description": "Manage cloud infrastructure on AWS and Azure. Implement CI/CD pipelines using Jenkins and GitHub Actions. Experience with Docker, Kubernetes, and Terraform required.",
+    "required_skills": ["Docker", "Kubernetes", "AWS", "Azure", "CI/CD", "Jenkins", "Terraform", "Linux", "Git", "Python"]
+  },
+  {
+    "id": 8,
+    "title": "NLP / AI Research Engineer",
+    "company": "LinguaTech AI",
+    "category": "AI / Research",
+    "description": "Research and develop natural language processing solutions. Build text classification, NER, and language models using Transformers, Hugging Face, and PyTorch.",
+    "required_skills": ["Python", "NLP", "Transformers", "PyTorch", "Hugging Face", "Deep Learning", "Machine Learning", "Scikit-learn"]
+  },
+  {
+    "id": 9,
+    "title": "Cybersecurity Analyst",
+    "company": "SecureNet Systems",
+    "category": "Cybersecurity",
+    "description": "Monitor and protect organizational systems from threats. Conduct vulnerability assessments, penetration testing, and incident response. SIEM tool experience preferred.",
+    "required_skills": ["Cybersecurity", "Penetration Testing", "Network Security", "Linux", "Firewalls", "SIEM", "Python"]
+  },
+  {
+    "id": 10,
+    "title": "Android Developer",
+    "company": "MobileFirst Apps",
+    "category": "Mobile Development",
+    "description": "Develop and publish high-quality Android mobile applications. Strong Kotlin skills required. Experience with REST APIs, Firebase, and agile development practices.",
+    "required_skills": ["Android", "Kotlin", "Java", "Firebase", "REST API", "Git", "Agile", "SQL"]
+  },
+  {
+    "id": 11,
+    "title": "Business Intelligence Analyst",
+    "company": "Insights Global",
+    "category": "Data Analytics",
+    "description": "Build dashboards and reports using Power BI and Tableau. Strong SQL and Excel skills required. Work closely with stakeholders to deliver actionable insights from data.",
+    "required_skills": ["SQL", "Power BI", "Tableau", "Excel", "Data Analysis", "Python", "MySQL"]
+  },
+  {
+    "id": 12,
+    "title": "Cloud Solutions Architect",
+    "company": "NimbusCloud Group",
+    "category": "Cloud / Architecture",
+    "description": "Design enterprise cloud architectures on AWS and GCP. Lead migrations, cost optimization, and security best practices. Deep knowledge of microservices and serverless architectures.",
+    "required_skills": ["AWS", "GCP", "Azure", "Docker", "Kubernetes", "Terraform", "Microservices", "Linux", "Python"]
+  }
+]

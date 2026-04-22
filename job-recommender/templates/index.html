@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Job Recommender</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    /* === CSS Variables (Design Tokens) === */
+    :root {
+      --bg: #0b0f1a;
+      --surface: #111827;
+      --surface2: #1a2235;
+      --border: #1f2d45;
+      --accent: #00d4aa;
+      --accent2: #3b82f6;
+      --accent-glow: rgba(0, 212, 170, 0.18);
+      --text: #e8edf5;
+      --text-muted: #7a8ba0;
+      --danger: #ff5577;
+      --success: #00d4aa;
+      --font-main: 'Sora', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --radius: 14px;
+      --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* === Reset & Base === */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-main);
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* === Animated grid background === */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Radial glow orbs */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0,212,170,0.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      animation: floatOrb 12s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatOrb {
+      0%   { transform: translate(0, 0); }
+      100% { transform: translate(100px, 80px); }
+    }
+
+    /* === Layout Container === */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* === Header === */
+    .header {
+      text-align: center;
+      padding: 3rem 0 2.5rem;
+      animation: fadeDown 0.7s ease both;
+    }
+
+    .header-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      background: var(--accent-glow);
+      border: 1px solid rgba(0,212,170,0.3);
+      padding: 0.35rem 1rem;
+      border-radius: 999px;
+      margin-bottom: 1.4rem;
+      text-transform: uppercase;
+    }
+
+    .header h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #e8edf5 20%, var(--accent) 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      margin-top: 0.9rem;
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* === Upload Card === */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s ease both;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .card:hover {
+      border-color: rgba(0,212,170,0.25);
+      box-shadow: 0 0 40px rgba(0,212,170,0.06);
+    }
+
+    .card-label {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+    }
+
+    /* === Drop Zone === */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: calc(var(--radius) - 2px);
+      padding: 2.8rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition);
+      position: relative;
+      background: var(--surface2);
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(0,212,170,0.04);
+      box-shadow: inset 0 0 30px rgba(0,212,170,0.05);
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .drop-icon {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 1rem;
+      background: var(--accent-glow);
+      border: 1px solid rgba(0,212,170,0.3);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .drop-icon svg { color: var(--accent); }
+
+    .drop-zone h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+
+    .drop-zone p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* === File selected state === */
+    .file-selected {
+      display: none;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.2rem;
+      background: rgba(0,212,170,0.06);
+      border: 1px solid rgba(0,212,170,0.25);
+      border-radius: calc(var(--radius) - 4px);
+      margin-top: 1rem;
+    }
+
+    .file-selected.visible { display: flex; }
+
+    .file-icon {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      background: rgba(0,212,170,0.12);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .file-info { flex: 1; min-width: 0; }
+    .file-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .file-size { font-size: 0.78rem; color: var(--text-muted); }
+
+    /* === Analyze Button === */
+    .btn-analyze {
+      width: 100%;
+      margin-top: 1.4rem;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--accent), #00b893);
+      color: #0b0f1a;
+      font-family: var(--font-main);
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      border: none;
+      border-radius: calc(var(--radius) - 2px);
+      cursor: pointer;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-analyze::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+
+    .btn-analyze:hover::before { opacity: 1; }
+    .btn-analyze:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,212,170,0.35); }
+    .btn-analyze:active { transform: translateY(0); }
+    .btn-analyze:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* === Loading Spinner === */
+    .loader {
+      display: none;
+      text-align: center;
+      padding: 2.5rem;
+    }
+
+    .loader.visible { display: block; }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      margin: 0 auto 1.2rem;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loader p {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    /* === Error Banner === */
+    .error-banner {
+      display: none;
+      background: rgba(255, 85, 119, 0.08);
+      border: 1px solid rgba(255, 85, 119, 0.3);
+      color: var(--danger);
+      padding: 1rem 1.2rem;
+      border-radius: calc(var(--radius) - 4px);
+      font-size: 0.88rem;
+      margin-top: 1rem;
+    }
+    .error-banner.visible { display: block; }
+
+    /* === Results Section === */
+    #results { display: none; animation: fadeUp 0.5s ease both; }
+    #results.visible { display: block; }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .results-header h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    .results-badge {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      background: var(--accent-glow);
+      color: var(--accent);
+      border: 1px solid rgba(0,212,170,0.3);
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+    }
+
+    /* === Skills Tags === */
+    .skills-section { margin-bottom: 1.5rem; }
+
+    .skills-section h3 {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.9rem;
+    }
+
+    .tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tag {
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      background: var(--surface2);
+      transition: all var(--transition);
+    }
+
+    .tag.matched {
+      border-color: rgba(0,212,170,0.4);
+      color: var(--accent);
+      background: var(--accent-glow);
+    }
+
+    /* === Job Cards === */
+    .jobs-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .job-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .job-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--accent), var(--accent2));
+      border-radius: 2px 0 0 2px;
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+
+    .job-card:hover {
+      border-color: rgba(0,212,170,0.25);
+      transform: translateX(4px);
+      box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+    }
+
+    .job-card:hover::before { opacity: 1; }
+
+    .job-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .job-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .job-company {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .match-score {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.25rem;
+      min-width: 80px;
+    }
+
+    .score-value {
+      font-family: var(--font-mono);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .score-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* Score bar */
+    .score-bar-track {
+      width: 80px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px;
+      transition: width 0.8s ease;
+    }
+
+    .job-description {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-bottom: 0.9rem;
+    }
+
+    .job-skills-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .job-skill-tag {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      background: var(--surface2);
+    }
+
+    .job-skill-tag.matched {
+      border-color: rgba(0,212,170,0.45);
+      color: var(--accent);
+      background: rgba(0,212,170,0.06);
+    }
+
+    .rank-chip {
+      position: absolute;
+      top: 1.2rem;
+      right: 1.2rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    /* === Footer === */
+    .footer {
+      text-align: center;
+      padding: 2.5rem 0 1.5rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      margin-top: 2rem;
+    }
+
+    /* === Animations === */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* === Responsive === */
+    @media (max-width: 600px) {
+      .container { padding: 1rem; }
+      .header { padding: 2rem 0 1.5rem; }
+      .job-card-header { flex-direction: column; }
+      .match-score { flex-direction: row; align-items: center; gap: 0.5rem; }
+      .score-bar-track { width: 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-badge">AI-Powered Career Tool</div>
+    <h1>Job Recommendation<br/>System</h1>
+    <p>Upload your resume and let AI match you with the most relevant job opportunities instantly.</p>
+  </div>
+
+  <!-- Upload Card -->
+  <div class="card">
+    <div class="card-label">Step 1 — Upload Resume</div>
+
+    <!-- Drop Zone -->
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="resumeFile" accept=".pdf" />
+      <div class="drop-icon">
+        <!-- Upload SVG Icon -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      <h3>Drop your PDF resume here</h3>
+      <p>or click to browse files &mdash; PDF only, max 5MB</p>
+    </div>
+
+    <!-- File Selected Display -->
+    <div class="file-selected" id="fileSelected">
+      <div class="file-icon">
+        <!-- PDF Icon SVG -->
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+      </div>
+      <div class="file-info">
+        <div class="file-name" id="fileName">resume.pdf</div>
+        <div class="file-size" id="fileSize">0 KB</div>
+      </div>
+    </div>
+
+    <!-- Error Banner -->
+    <div class="error-banner" id="errorBanner">Something went wrong. Please try again.</div>
+
+    <!-- Analyze Button -->
+    <button class="btn-analyze" id="analyzeBtn" disabled>
+      Analyze Resume with AI
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    <p>Analyzing resume... extracting skills...</p>
+  </div>
+
+  <!-- Results Section -->
+  <div id="results">
+
+    <div class="results-header">
+      <h2>Analysis Results</h2>
+      <span class="results-badge" id="jobCount">0 matches</span>
+    </div>
+
+    <!-- Extracted Skills -->
+    <div class="card skills-section">
+      <div class="card-label">Extracted Skills</div>
+      <div class="tags-wrap" id="skillsTags">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Keywords -->
+    <div class="card skills-section">
+      <div class="card-label">Resume Keywords</div>
+      <div class="tags-wrap" id="keywordsTags">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Job Recommendations -->
+    <div class="card">
+      <div class="card-label">Recommended Jobs</div>
+      <div class="jobs-grid" id="jobsGrid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+  </div><!-- /results -->
+
+  <!-- Footer -->
+  <div class="footer">
+    AI Job Recommender &mdash; Built with Flask + scikit-learn + pdfplumber
+  </div>
+
+</div><!-- /container -->
+
+<script>
+  // ============================================================
+  // Frontend JavaScript
+  // Handles file selection, drag-drop, form submission,
+  // and dynamic rendering of results
+  // ============================================================
+
+  const dropZone     = document.getElementById('dropZone');
+  const resumeFile   = document.getElementById('resumeFile');
+  const fileSelected = document.getElementById('fileSelected');
+  const fileName     = document.getElementById('fileName');
+  const fileSize     = document.getElementById('fileSize');
+  const analyzeBtn   = document.getElementById('analyzeBtn');
+  const loader       = document.getElementById('loader');
+  const results      = document.getElementById('results');
+  const errorBanner  = document.getElementById('errorBanner');
+  const skillsTags   = document.getElementById('skillsTags');
+  const keywordsTags = document.getElementById('keywordsTags');
+  const jobsGrid     = document.getElementById('jobsGrid');
+  const jobCount     = document.getElementById('jobCount');
+
+  // --- File Selection Handler ---
+  resumeFile.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) showFileInfo(file);
+  });
+
+  function showFileInfo(file) {
+    // Show file name and size
+    fileName.textContent = file.name;
+    fileSize.textContent = (file.size / 1024).toFixed(1) + ' KB';
+    fileSelected.classList.add('visible');
+    analyzeBtn.disabled = false;
+    hideError();
+  }
+
+  // --- Drag and Drop Events ---
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type === 'application/pdf') {
+      // Inject file into the input element
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      resumeFile.files = dt.files;
+      showFileInfo(file);
+    } else {
+      showError('Please drop a valid PDF file.');
+    }
+  });
+
+  // --- Form Submission (Analyze Button) ---
+  analyzeBtn.addEventListener('click', async () => {
+    const file = resumeFile.files[0];
+    if (!file) return;
+
+    // Show loading state
+    setLoading(true);
+    hideError();
+    results.classList.remove('visible');
+
+    // Build form data
+    const formData = new FormData();
+    formData.append('resume', file);
+
+    try {
+      // Send POST request to Flask backend
+      const response = await fetch('/analyze', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Server error');
+      }
+
+      // Render results
+      renderResults(data);
+
+    } catch (err) {
+      showError(err.message || 'Failed to connect to server.');
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  // --- Render Results ---
+  function renderResults(data) {
+    // Clear previous results
+    skillsTags.innerHTML = '';
+    keywordsTags.innerHTML = '';
+    jobsGrid.innerHTML = '';
+
+    // Collect all matched skills for highlighting
+    const allMatchedSkills = new Set();
+    (data.recommendations || []).forEach(job => {
+      (job.matched_skills || []).forEach(s => allMatchedSkills.add(s.toLowerCase()));
+    });
+
+    // Render skills tags
+    if (data.skills && data.skills.length > 0) {
+      data.skills.forEach(skill => {
+        const tag = document.createElement('span');
+        tag.className = 'tag' + (allMatchedSkills.has(skill.toLowerCase()) ? ' matched' : '');
+        tag.textContent = skill;
+        skillsTags.appendChild(tag);
+      });
+    } else {
+      skillsTags.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem;">No specific skills detected.</span>';
+    }
+
+    // Render keyword tags
+    if (data.keywords && data.keywords.length > 0) {
+      data.keywords.forEach(kw => {
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.textContent = kw;
+        keywordsTags.appendChild(tag);
+      });
+    }
+
+    // Render job cards
+    const jobs = data.recommendations || [];
+    jobCount.textContent = jobs.length + ' match' + (jobs.length !== 1 ? 'es' : '');
+
+    jobs.forEach((job, index) => {
+      const card = document.createElement('div');
+      card.className = 'job-card';
+      card.style.animationDelay = (index * 0.07) + 's';
+
+      // Build skill tags HTML
+      const skillsHTML = (job.required_skills || []).map(skill => {
+        const isMatch = (job.matched_skills || []).map(s => s.toLowerCase()).includes(skill.toLowerCase());
+        return `<span class="job-skill-tag ${isMatch ? 'matched' : ''}">${skill}</span>`;
+      }).join('');
+
+      const scorePercent = Math.min(100, job.match_score || 0);
+
+      card.innerHTML = `
+        <div class="rank-chip">#${index + 1}</div>
+        <div class="job-card-header">
+          <div>
+            <div class="job-title">${job.title}</div>
+            <div class="job-company">${job.company} &middot; ${job.category}</div>
+          </div>
+          <div class="match-score">
+            <div class="score-value">${scorePercent}%</div>
+            <div class="score-label">Match</div>
+            <div class="score-bar-track">
+              <div class="score-bar-fill" style="width: ${scorePercent}%;"></div>
+            </div>
+          </div>
+        </div>
+        <p class="job-description">${job.description}</p>
+        <div class="job-skills-row">${skillsHTML}</div>
+      `;
+
+      jobsGrid.appendChild(card);
+    });
+
+    // Show results section with animation
+    results.classList.add('visible');
+
+    // Smooth scroll to results
+    setTimeout(() => results.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  }
+
+  // --- Utility Functions ---
+  function setLoading(isLoading) {
+    loader.classList.toggle('visible', isLoading);
+    analyzeBtn.disabled = isLoading;
+    analyzeBtn.textContent = isLoading ? 'Analyzing...' : 'Analyze Resume with AI';
+  }
+
+  function showError(msg) {
+    errorBanner.textContent = msg;
+    errorBanner.classList.add('visible');
+  }
+
+  function hideError() {
+    errorBanner.classList.remove('visible');
+  }
+</script>
+
+</body>
+</html>
